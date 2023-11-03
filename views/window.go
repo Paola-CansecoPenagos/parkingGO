@@ -1,3 +1,4 @@
+// views/window.go
 package views
 
 import (
@@ -13,47 +14,34 @@ import (
 )
 
 const (
-	Velocidad           = 0.2
+	Velocidad           = 1.0
 	AnchoAuto           = 80.0
 	AltoAuto            = 80.0
 	AltoEspacio         = 100.0
 	DistanciaEntreAutos = 10.0
 )
 
-func GenerarVehiculos(e *models.Estacionamiento) {
+func GenerarVehiculos(e *models.Parking) {
 	rand.Seed(time.Now().UnixNano())
 
 	for {
-		auto := &models.Auto{PosX: -models.AnchoAuto - DistanciaEntreAutos, PosY: scenes.AltoVentana/2 + models.AltoAuto/2, Dir: 1}
-		pos := e.Entrar(auto)
+		auto := &models.Auto{PosX: scenes.AnchoVentana - AnchoAuto, PosY: scenes.AltoVentana, Dir: 1}
+		pos := e.Enter(auto)
 
 		if pos != -1 {
 			go func(p int) {
-				time.Sleep(time.Duration(5) * time.Second)
-				e.Salir(p)
+				time.Sleep(time.Duration(rand.Intn(15)+5) * time.Second)
+				e.Exit(p)
 			}(pos)
 		}
 		time.Sleep(time.Millisecond * 1500)
 	}
 }
 
-func Run(win *pixelgl.Window, e *models.Estacionamiento) {
+func Run(win *pixelgl.Window, e *models.Parking) {
 	rand.Seed(time.Now().UnixNano())
 
-	go func() {
-		for {
-			auto := &models.Auto{PosX: -AnchoAuto - DistanciaEntreAutos, PosY: scenes.AltoVentana/2 + AltoAuto/2, Dir: 1}
-			pos := e.Entrar(auto)
-
-			if pos != -1 {
-				go func(p int) {
-					time.Sleep(time.Duration(rand.Intn(15)+5) * time.Second)
-					e.Salir(p)
-				}(pos)
-			}
-			time.Sleep(time.Millisecond * 1500)
-		}
-	}()
+	go GenerarVehiculos(e)
 
 	for !win.Closed() {
 		win.Clear(pixel.RGB(1, 1, 1))
@@ -64,20 +52,24 @@ func Run(win *pixelgl.Window, e *models.Estacionamiento) {
 		e.Mu.Lock()
 		for i, auto := range e.Ocupados {
 			if auto != nil {
-				if i%2 == 0 {
-					auto.PosY = scenes.AltoVentana/2 + AltoAuto/2
+				if auto.PosY > scenes.AltoEspacio {
+					auto.PosY -= Velocidad
 				} else {
-					auto.PosY = scenes.AltoVentana/2 - AltoAuto/2 - AltoEspacio
+					targetX := scenes.TamanoEspacio * float64(i) // Posición objetivo en X
+					if auto.PosX < targetX-20 {
+						auto.PosX += Velocidad
+					} else if auto.PosX > targetX+20 {
+						auto.PosX -= Velocidad
+					} else {
+						auto.PosY = scenes.AltoEspacio // Ajusta la altura del auto al nivel del carril
+						auto.PosX = targetX            // Se posiciona exactamente sobre el carril
+					}
 				}
 
 				im.Color = pixel.RGB(0, 1, 0)
 				im.Push(pixel.V(auto.PosX, auto.PosY))
 				im.Push(pixel.V(auto.PosX+AnchoAuto, auto.PosY+AltoAuto))
 				im.Rectangle(0)
-
-				if auto.PosX < scenes.TamanoEspacio*float64(i/2)+scenes.TamanoEspacio/2 || auto.Dir == -1 {
-					auto.PosX += Velocidad * auto.Dir
-				}
 			}
 		}
 		e.Mu.Unlock()

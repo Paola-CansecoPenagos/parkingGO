@@ -12,14 +12,14 @@ func main() {
 	pixelgl.Run(func() {
 		cfg := pixelgl.WindowConfig{
 			Title:  "Parking",
-			Bounds: pixel.R(0, 0, 1000, 800),
+			Bounds: pixel.R(0, 0, 2000, 600),
 		}
 		win, err := pixelgl.NewWindow(cfg)
 		if err != nil {
 			panic(err)
 		}
 
-		e := models.NuevoEstacionamiento(20)
+		e := models.NewParking(20)
 		views.Run(win, e)
 	})
 }

@@ -1,6 +1,8 @@
 package models
 
-import "sync"
+import (
+	"sync"
+)
 
 const (
 	AnchoAuto = 50.0
@@ -8,13 +10,14 @@ const (
 )
 
 type Auto struct {
-	PosX  float64
-	PosY  float64
-	Dir   float64
-	Cajon int
+	PosX       float64
+	PosY       float64
+	Dir        float64
+	Cajon      int
+	EnTransito bool
 }
 
-type Estacionamiento struct {
+type Parking struct {
 	Espacios int
 	Mu       sync.Mutex
 	Ocupados []*Auto
@@ -22,20 +25,21 @@ type Estacionamiento struct {
 	Cajones  []bool
 }
 
-func NuevoEstacionamiento(capacidad int) *Estacionamiento {
-	return &Estacionamiento{
+func NewParking(capacidad int) *Parking {
+	return &Parking{
 		Espacios: capacidad,
 		Ocupados: make([]*Auto, capacidad),
 		Cajones:  make([]bool, capacidad),
 	}
 }
 
-func (e *Estacionamiento) Entrar(auto *Auto) int {
+func (e *Parking) Enter(auto *Auto) int {
 	e.Mu.Lock()
 	defer e.Mu.Unlock()
 	for i, lugar := range e.Ocupados {
 		if lugar == nil {
 			e.Ocupados[i] = auto
+			auto.EnTransito = true
 			for j := 0; j < e.Espacios; j++ {
 				if !e.Cajones[j] {
 					e.Cajones[j] = true
@@ -46,19 +50,16 @@ func (e *Estacionamiento) Entrar(auto *Auto) int {
 			return -1
 		}
 	}
-	e.EnEspera = append(e.EnEspera, auto)
 	return -1
 }
 
-func (e *Estacionamiento) Salir(i int) {
+func (e *Parking) Exit(i int) {
 	e.Mu.Lock()
 	defer e.Mu.Unlock()
-	if e.Ocupados[i] != nil {
-		e.Cajones[e.Ocupados[i].Cajon] = false
+	auto := e.Ocupados[i]
+	if auto != nil {
+		e.Cajones[auto.Cajon] = false
+		auto.EnTransito = true
 	}
 	e.Ocupados[i] = nil
-	if len(e.EnEspera) > 0 {
-		e.Ocupados[i] = e.EnEspera[0]
-		e.EnEspera = e.EnEspera[1:]
-	}
 }

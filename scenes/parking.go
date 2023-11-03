@@ -1,3 +1,4 @@
+// scenes/parking.go
 package scenes
 
 import (
@@ -16,7 +17,7 @@ const (
 	GrosorLineaDivisoria = 3
 )
 
-func DibujarEstacionamiento(im *imdraw.IMDraw, e *models.Estacionamiento) {
+func DibujarEstacionamiento(im *imdraw.IMDraw, e *models.Parking) {
 	for i := 0; i < e.Espacios; i++ {
 		if e.Cajones[i] {
 			im.Color = pixel.RGB(1, 0, 0)
@@ -24,14 +25,14 @@ func DibujarEstacionamiento(im *imdraw.IMDraw, e *models.Estacionamiento) {
 			im.Color = pixel.RGB(0, 1, 0)
 		}
 		xStart := TamanoEspacio*float64(i) + TamanoEspacio/2
-		centerY := AltoVentana / 2
+		centerY := AltoEspacio / 2 // Cambiar a la mitad del AltoEspacio
 
 		im.Push(pixel.V(xStart, centerY+AltoEspacio/2))
 		im.Push(pixel.V(xStart, centerY-AltoEspacio/2))
-		im.Rectangle(GrosorLineaDivisoria) // Usar GrosorLineaDivisoria para la línea vertical
+		im.Rectangle(GrosorLineaDivisoria)
 
 		im.Push(pixel.V(xStart, centerY+AltoEspacio/2))
 		im.Push(pixel.V(xStart, centerY-AltoEspacio/2))
-		im.Rectangle(0) // Dibuja el espacio como un rectángulo sin rellenar
+		im.Rectangle(0)
 	}
 }
