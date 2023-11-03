@@ -56,7 +56,7 @@ func Run(win *pixelgl.Window, e *models.Parking) {
 					auto.PosY -= Velocidad
 				} else {
 					targetX := scenes.TamanoEspacio * float64(i) // Posición objetivo en X
-					if auto.PosX < targetX-20 {
+					if auto.PosX < targetX-60 {
 						auto.PosX += Velocidad
 					} else if auto.PosX > targetX+20 {
 						auto.PosX -= Velocidad
