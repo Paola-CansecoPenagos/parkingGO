@@ -1,4 +1,3 @@
-// scenes/parking.go
 package scenes
 
 import (
@@ -25,7 +24,7 @@ func DibujarEstacionamiento(im *imdraw.IMDraw, e *models.Parking) {
 			im.Color = pixel.RGB(0, 1, 0)
 		}
 		xStart := TamanoEspacio*float64(i) + TamanoEspacio/2
-		centerY := AltoEspacio / 2 // Cambiar a la mitad del AltoEspacio
+		centerY := AltoEspacio / 2
 
 		im.Push(pixel.V(xStart, centerY+AltoEspacio/2))
 		im.Push(pixel.V(xStart, centerY-AltoEspacio/2))
