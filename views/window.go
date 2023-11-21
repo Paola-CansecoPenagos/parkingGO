@@ -20,6 +20,11 @@ const (
 	DistanciaEntreAutos = 10.0
 )
 
+func CalcularTiempo(auto *models.Auto) {
+	time.Sleep(time.Duration(rand.Intn(15)+5) * time.Second)
+	auto.State = models.StateExiting
+}
+
 func GenerarVehiculos(e *models.Parking) {
 	rand.Seed(time.Now().UnixNano())
 
@@ -28,10 +33,8 @@ func GenerarVehiculos(e *models.Parking) {
 		pos := e.Enter(auto)
 
 		if pos != -1 {
-			go func(p int) {
-				time.Sleep(time.Duration(rand.Intn(15)+5) * time.Second)
-				auto.State = models.StateExiting
-			}(pos)
+			// Pasamos el auto como argumento a la función CalcularTiempo
+			go CalcularTiempo(auto)
 		}
 		time.Sleep(time.Millisecond * 1500)
 	}
@@ -53,13 +56,13 @@ func Run(win *pixelgl.Window, e *models.Parking) {
 				if auto.State == models.StateEntering {
 					auto.PosX += Velocidad * auto.Dir
 					auto.PosY = AltoAuto + AltoEspacio*2.2
+					if auto.PosX >= 90*float64(i) {
+						auto.State = models.StateParked
+					}
 					im.Color = pixel.RGB(133.0/255, 193.0/255, 233.0/255)
 					im.Push(pixel.V(auto.PosX, auto.PosY))
 					im.Push(pixel.V(auto.PosX+AnchoAuto, auto.PosY+AltoAuto))
 					im.Rectangle(0)
-					if auto.PosX >= 90*float64(i) {
-						auto.State = models.StateParked
-					}
 				} else if auto.State == models.StateParked {
 					auto.PosX = 90 * float64(i)
 					auto.PosY = AltoAuto + AltoEspacio*0.2
@@ -69,8 +72,7 @@ func Run(win *pixelgl.Window, e *models.Parking) {
 					im.Rectangle(0)
 				} else if auto.State == models.StateExiting {
 					auto.PosX -= Velocidad * auto.Dir
-					auto.PosY = AltoAuto + AltoEspacio*1.2 //para que salga por debajo de la entrada
-					//auto.PosY = AltoAuto + AltoEspacio*2.2 //para que salga en la entrada
+					auto.PosY = AltoAuto + AltoEspacio*2.2
 					im.Color = pixel.RGB(0xF5/255.0, 0xB7/255.0, 0xB1/255.0)
 					im.Push(pixel.V(auto.PosX, auto.PosY))
 					im.Push(pixel.V(auto.PosX+AnchoAuto, auto.PosY+AltoAuto))
