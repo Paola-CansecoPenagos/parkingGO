@@ -1,17 +1,12 @@
 package models
 
 const (
-	AnchoAuto = 50.0
-	AltoAuto  = 50.0
-)
-
-type AutoState int
-
-const (
-	StateEntering AutoState = iota
+	StateEntering       AutoState = iota
 	StateParked
 	StateExiting
 )
+
+type AutoState int
 
 type Auto struct {
 	PosX       float64
